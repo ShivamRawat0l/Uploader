@@ -1,0 +1,120 @@
+<html>
+    <head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+        <title>Altan</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    </head>
+<body> <div class="container">
+    <div id='UploadBox' >
+        <h2>Video Uploader</h2>
+        <span id='UploadArea'>
+            <label for='FileBox'>Choose A File: </label><input type='file' id='FileBox'><br>
+            <label for='NameBox'>Name: </label><input type='text' id='NameBox'><br>
+            <button class="btn waves-effect waves-light" type='button' id='UploadButton' class='Button'>Upload</button>
+        </span>
+    </div></div>
+</body>
+<script>
+  
+    window.addEventListener("load", Ready); 
+    
+    
+ function Ready(){ 
+     if(window.File && window.FileReader){ //These are the relevant HTML5 objects that we are going to use 
+         document.getElementById('UploadButton').addEventListener('click', StartUpload);  
+         document.getElementById('FileBox').addEventListener('change', FileChosen);
+     }
+     else
+     {
+        document.getElementById('UploadArea').innerHTML = "Your Browser Doesn't Support The File API Please Update Your Browser";
+     }
+ }
+ var SelectedFile;
+function FileChosen(evnt) {
+    SelectedFile = evnt.target.files[0];
+    document.getElementById('NameBox').value = SelectedFile.name;
+
+}
+var socket = io.connect('http://localhost:3000');
+var FReader;
+var Name;
+function StartUpload(){
+    if(document.getElementById('FileBox').value != "")
+    {
+        try{
+        FReader = new FileReader();
+        Name = document.getElementById('NameBox').value;
+        var Content = "<div class='row'><h5 id='NameArea'>Uploading " + SelectedFile.name + " as " + Name + "</h5></div>";
+        Content += "<div class='row'><div id='ProgressContainer'><div id='ProgressBar'></div></div><h5 id='percent'>0%</h5>";
+        Content += "<div class='row'><h6 id='Uploaded'><span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + "MB</h6></div>";
+        Content+= "<div class='row'><button  class='btn waves-effect waves-light' style='margin:20;' id='pause'>Pause</button></div>"
+        Content+= "<div class='row'><button  class='btn waves-effect waves-light' style='margin:20;' id='play'>Resume</button></div>"
+        Content+= "<div class='row'><button  class='btn waves-effect waves-light' style='margin:20;' id='terminate'>Terminate</button></div>"
+        document.getElementById('UploadArea').innerHTML = Content;
+        document.getElementById('play').style.display= 'none';
+        document.getElementById('terminate').style.display= 'none';
+        document.getElementById('pause').addEventListener('click',()=>{
+            document.getElementById('pause').style.display= 'none';
+            document.getElementById('play').style.display= 'block';
+            document.getElementById('terminate').style.display= 'block';
+            socket.emit('pause');
+        })
+        document.getElementById('play').addEventListener('click',()=>{
+            document.getElementById('play').style.display= 'none';
+            document.getElementById('pause').style.display= 'block';
+            document.getElementById('terminate').style.display= 'none';
+            socket.emit('play',{'Name' : Name});
+        })
+        document.getElementById('terminate').addEventListener('click',()=>{
+            
+            socket.emit('terminate', {'Name' : Name});
+            document.getElementById('UploadArea').innerHTML= "Process Cancelled <button id='Restart'>Refresh</button>  "
+            document.getElementById('Restart').addEventListener('click', Refresh);
+
+        })
+        FReader.onload = function(evnt){
+            socket.emit('Upload', { 'Name' : Name, Data : evnt.target.result });
+        }
+        socket.emit('Start', { 'Name' : Name, 'Size' : SelectedFile.size });
+        }
+        catch{
+            alert("Please Select A File");
+        }
+    }
+    else
+    {
+        alert("Please Select A File");
+    }
+}
+socket.on('MoreData', function (data){
+    UpdateBar(data['Percent']);
+    var Place = data['Place'] * 524288; 
+    var NewFile;
+    if(SelectedFile.webkitSlice) 
+        NewFile = SelectedFile.webkitSlice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));
+    else if(SelectedFile.mozSlice)
+        NewFile = SelectedFile.mozSlice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));
+    else
+        NewFile = SelectedFile.slice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));
+    FReader.readAsBinaryString(NewFile);
+});
+ 
+function UpdateBar(percent){
+    document.getElementById('ProgressBar').style.width = percent + '%';
+    document.getElementById('percent').innerHTML = (Math.round(percent*100)/100) + '%';
+    var MBDone = Math.round(((percent/100.0) * SelectedFile.size) / 1048576);
+    document.getElementById('MB').innerHTML = MBDone;
+}
+ 
+socket.on('Done', function (data){
+    var Content = "Video Successfully Uploaded !!"
+    Content += "<button  type='button' name='Upload' value='' id='Restart' class='Button'>Upload Another</button>";
+    document.getElementById('UploadArea').innerHTML = Content;
+    document.getElementById('Restart').addEventListener('click', Refresh);
+});
+function Refresh(){
+    location.reload(true);
+}
+</script>
+</html>
