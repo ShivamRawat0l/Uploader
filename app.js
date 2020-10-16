@@ -29,7 +29,7 @@ io.on('connection', (socket) => {
         catch(er){
             console.log("An error occured :- "+er)
         }
-        fs.open(path.join(__dirname, "Temp/"+data["Name"]) + Name, "a",0777, function(err, fd){
+        fs.open(path.join(__dirname, "Temp/"+data["Name"]), "a",0777, function(err, fd){
             if(err)
             {
                 console.log(err);
