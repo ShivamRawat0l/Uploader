@@ -5,16 +5,29 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     </head>
-<body> <div class="container">
+<body style="background-color: #1b262c;"> <div class="container">
     <div id='UploadBox' >
-        <h2>Video Uploader</h2>
+        <h1 style="font-weight: 900;font-size: 100px;color:#00b7c2;">Video Uploader</h1>
         <span id='UploadArea'>
-            <label for='FileBox'>Choose A File: </label><input type='file' id='FileBox'><br>
-            <label for='NameBox'>Name: </label><input type='text' id='NameBox'><br>
-            <button class="btn waves-effect waves-light" type='button' id='UploadButton' class='Button'>Upload</button>
+            <label  style="font-weight: 200;font-size: 30px;color:#00b7c2;" for='FileBox'>Choose A File: </label>
+            <div class="row">
+            <input   style="font-weight: 200;font-size: 20px;color:#00b7c2;text-decoration: underline;" type='file' id='FileBox'><br>
+            </div>
+            <label  style="font-weight: 600;font-size: 35px;color:#00b7c2;" for='NameBox'>Set File Name: </label>
+            <input  style="font-weight: 200;font-size: 20px;color:#00b7c2;" type='text' id='NameBox'><br>
+            <button class="btn waves-effect waves-light btn-custom" type='button'  id='UploadButton' class='Button'>Upload</button>
         </span>
     </div></div>
 </body>
+<style>
+    .btn-custom{
+        margin-top: 60px;
+        font-weight: 800;
+        background-color: #0f4c75;
+        font-size: 30px;
+        color:#1b262c;
+    }
+</style>
 <script>
   
     window.addEventListener("load", Ready); 
@@ -45,12 +58,12 @@ function StartUpload(){
         try{
         FReader = new FileReader();
         Name = document.getElementById('NameBox').value;
-        var Content = "<div class='row'><h5 id='NameArea'>Uploading " + SelectedFile.name + " as " + Name + "</h5></div>";
-        Content += "<div class='row'><div id='ProgressContainer'><div id='ProgressBar'></div></div><h5 id='percent'>0%</h5>";
-        Content += "<div class='row'><h6 id='Uploaded'><span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + "MB</h6></div>";
-        Content+= "<div class='row'><button  class='btn waves-effect waves-light' style='margin:20;' id='pause'>Pause</button></div>"
-        Content+= "<div class='row'><button  class='btn waves-effect waves-light' style='margin:20;' id='play'>Resume</button></div>"
-        Content+= "<div class='row'><button  class='btn waves-effect waves-light' style='margin:20;' id='terminate'>Terminate</button></div>"
+        var Content = "<div class='row'  style='font-weight: 200;font-size: 30px;color:#00b7c2;margin-top:100px;'><h5 id='NameArea'>Uploading " + SelectedFile.name + " as " + Name + "</h5></div>";
+        Content += "<div class='row'  style='font-weight: 200;font-size: 30px;color:#00b7c2;'><div id='ProgressContainer'><div id='ProgressBar'></div></div><h5 id='percent'>0%</h5>";
+        Content += "<div class='row'  style='font-weight: 200;font-size: 30px;color:#00b7c2;'><h6 id='Uploaded'><span id='MB'>0</span>/" + Math.round(SelectedFile.size / 1048576) + "MB</h6></div>";
+        Content+= "<div class='row'><button  class='btn waves-effect waves-light btn-custom' style='margin:20;' id='pause'>Pause</button></div>"
+        Content+= "<div class='row'><button  class='btn waves-effect waves-light btn-custom' style='margin:20;' id='play'>Resume</button></div>"
+        Content+= "<div class='row'><button  class='btn waves-effect waves-light btn-custom' style='margin:20;' id='terminate'>Terminate</button></div>"
         document.getElementById('UploadArea').innerHTML = Content;
         document.getElementById('play').style.display= 'none';
         document.getElementById('terminate').style.display= 'none';
@@ -69,7 +82,7 @@ function StartUpload(){
         document.getElementById('terminate').addEventListener('click',()=>{
             
             socket.emit('terminate', {'Name' : Name});
-            document.getElementById('UploadArea').innerHTML= "Process Cancelled <button id='Restart'>Refresh</button>  "
+            document.getElementById('UploadArea').innerHTML= "Process Cancelled <button  class='btn waves-effect waves-light btn-custom' id='Restart'>Refresh</button>  "
             document.getElementById('Restart').addEventListener('click', Refresh);
 
         })
@@ -108,8 +121,10 @@ function UpdateBar(percent){
 }
  
 socket.on('Done', function (data){
-    var Content = "Video Successfully Uploaded !!"
-    Content += "<button  type='button' name='Upload' value='' id='Restart' class='Button'>Upload Another</button>";
+    var Content = "<div class='row' style='font-weight: 200;font-size: 30px;color:#00b7c2;text-align:center;margin-top:150px' >Video Successfully Uploaded !!</div>"
+     Content += "<div class='row' style='font-weight: 800;font-size: 30px;color:#00b7c2;text-align:center;' >OR</div>"
+     Content += "<div class='row' style='font-weight: 200;font-size: 30px;color:#00b7c2;text-align:center;' >File Already Available </div>"
+    Content += "<div class='row'><button  class='btn waves-effect waves-light btn-custom' type='button' name='Upload' value='' id='Restart' class='Button'>Upload Another</button></div>";
     document.getElementById('UploadArea').innerHTML = Content;
     document.getElementById('Restart').addEventListener('click', Refresh);
 });
