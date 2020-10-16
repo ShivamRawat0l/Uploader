@@ -5,11 +5,16 @@ var io = require('socket.io')(http);
 var fs= require('fs')
 let path = require('path');
 const port = 3000
-
+var dir = './Temp';
 io.on('connection', (socket) => {
     var Files = {};
     var pause=false;
     console.log('a user connected');
+    
+
+    if (!fs.existsSync(dir)){
+        fs.mkdirSync(dir);
+    }
     socket.on('Start', function (data) {
         var Name = data['Name'];
         Files[Name] = { 
